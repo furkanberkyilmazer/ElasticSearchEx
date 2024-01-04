@@ -1,11 +1,9 @@
 ﻿using ElasticSearch.API.DTOs;
-using Nest;
 
 namespace ElasticSearch.API.Models
 {
     public class Product
     {
-        [PropertyName("_id")]
         public string Id { get; set; } = null!;   //elasticsearch d yi string tutuyor
         public string Name { get; set; } = null!;   //null! : null olmayacak anlamında 
 

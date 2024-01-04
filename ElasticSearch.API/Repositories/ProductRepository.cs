@@ -1,6 +1,6 @@
-﻿using ElasticSearch.API.DTOs;
+﻿using Elastic.Clients.Elasticsearch;
+using ElasticSearch.API.DTOs;
 using ElasticSearch.API.Models;
-using Nest;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
@@ -8,10 +8,10 @@ namespace ElasticSearch.API.Repositories
 {
     public class ProductRepository
     {
-        private readonly ElasticClient _client;
+        private readonly ElasticsearchClient _client;
         private const string indexName = "products";
 
-        public ProductRepository(ElasticClient client)
+        public ProductRepository(ElasticsearchClient client)
         {
             _client = client;
         }
@@ -22,7 +22,7 @@ namespace ElasticSearch.API.Repositories
 
             var response = await _client.IndexAsync(newProduct, x => x.Index(indexName).Id(Guid.NewGuid())); //elasticserach de indexleme kayıt  //normalde id kendi atıyor ama biz kendimiz atmak istersek bu şekilde atıyoruz
 
-            if (!response.IsValid) return null;  //fast fail   deniyor bu kullanıma 
+            if (!response.IsSuccess()) return null;  //fast fail   deniyor bu kullanıma 
 
             newProduct.Id = response.Id;
             return newProduct;
@@ -44,7 +44,7 @@ namespace ElasticSearch.API.Repositories
         {
             var response = await _client.GetAsync<Product>(id, x => x.Index(indexName));
 
-            if (!response.IsValid)
+            if (!response.IsSuccess())
                 return null;
 
             response.Source.Id= response.Id;
@@ -55,10 +55,10 @@ namespace ElasticSearch.API.Repositories
 
         public async Task<bool> UpdateAsync(ProductUpdateDto updatedProduct)
         {
-            var response = await _client.UpdateAsync<Product,ProductUpdateDto>(updatedProduct.Id, x => x.Index(indexName).Doc(updatedProduct));
+            var response = await _client.UpdateAsync<Product,ProductUpdateDto>(indexName,updatedProduct.Id,x=>x.Doc(updatedProduct));
 
            
-            return response.IsValid;
+            return response.IsSuccess();
 
 
         }
